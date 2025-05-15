@@ -1,5 +1,5 @@
 using LibSerialPort, DataFrames, CSV
-plotlyjs()
+using PlotlyJS
 
 ### This script is used to read data from a serial port and parse it into a DataFrame
 
