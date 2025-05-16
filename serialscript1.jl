@@ -9,7 +9,7 @@ sp = LibSerialPort.open("COM1", 115200)
 #open allows configuring data framing parameters like ndatabits, parity, and nstopbits.
 # deafult is 8N1
 
-##clear both buffers, use default(no flow control)
+##clear both buffers, use default(no flow control), flow control used to pause sender when needed
 set_flow_control(sp)
 #flush input and output buffers
 sp_flush(sp, SP_BUF_BOTH)
@@ -40,11 +40,12 @@ positionlayout = Layout(
 ### find number of bytes in input buffer, create a new buffer, and read bytes into it
 
 bytes_waiting = sp_input_waiting(sp) 
-buffer = Vector{UInt8}(undef, bytes_waiting)
+##array of type UInt8 with unitialized values, size of the data in input buffer
 while bytes_waiting > 0
+    myarray = Vector{UInt8}(undef, bytes_waiting)
     println("Found $bytes_waiting bytes in buffer")
-    bytes_read = readbytes!(sp, buffer, bytes_waiting)
-    converted_data = String(buffer[1:bytes_read])
+    bytes_read = readbytes!(sp, myarray, bytes_waiting)
+    converted_data = String(myarray[1:bytes_read])
 
     ## divide data into positional and ADC data ##
     for m in eachmatch(r"\d+\.\d+|\d+", converted_data) 
