@@ -22,14 +22,21 @@ println(readline(sp))
 ADC_data = Float16[]
 Positional_data = UInt16[]
 time = Float16[0.0] 
-
+##create plotlyjs figure
+currentlayout = Layout(
+    title="Real Time Current vs Time",
+    xaxis=attr(title="Time (ms)"),
+    yaxis=attr(title="Current"),
+    legend=attr(x=0.01, y=0.99)
+)
+positionlayout = Layout(
+    title="Position vs Time",
+    xaxis=attr(title="Time (ms)"),
+    yaxis=attr(title="Position"),
+    legend=attr(x=0.01, y=0.99)
+)
 ##create plots
-plotcurrent = plot(title="Real Time Current vs Time",xlabel="Time (ms)", 
-                ylabel="Current",
-                label="Current", legend=:topright)
-plotposition = plot(title="Position vs Time", xlabel="Time (ms)", 
-                ylabel="Position", 
-                label="Position")
+
 ### find number of bytes in input buffer, create a new buffer, and read bytes into it
 
 bytes_waiting = sp_input_waiting(sp) 
@@ -54,14 +61,20 @@ while bytes_waiting > 0
         push!(time, time[end] + 0.05) #increment time by 0.05 ms for every match
     end
     bytes_waiting = sp_input_waiting(sp)
-    plot!(plotcurrent, time, ADC_data, overwrite=true)
-    display(plotcurrent)  
-    plot!(plotposition, time, Positional_data, overwrite=true)
-    display(plotposition)
+    
 end
 
 df = DataFrame(Current=ADC_data, Position=Positional_data, Time = time)
 
+trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="Position vs Time",
+    line=attr(color="black", width=2))
+trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="Current vs Time",
+    line=attr(color="black", width=2))
+
+plt1 = PlotlyJS.plot(trace1, positionlayout)
+plt2 = PlotlyJS.plot(trace2, currentlayout)
+display(plt1)
+display(plt2)
 CSV.write("motor_pos_adc.csv", df)
 
 close(sp)
