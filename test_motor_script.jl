@@ -38,5 +38,5 @@ display(plt1)
 display(plt2)
 CSV.write("motor_pos_adc.csv", df)
 
-close(sp)
+##Plotting code works
 
