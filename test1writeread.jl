@@ -4,37 +4,47 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB20"
+port = "/dev/ttyUSB25"
+
+
 try
     sp = LibSerialPort.open(port, 115200)
     sp_flush(sp, SP_BUF_BOTH)
-    #write(sp, "mtime \n")
-    write(sp, "mslow\n")
-    #write(sp, "helpfff\n")
-    sleep(1)
 
-    bytes_waiting = bytesavailable(sp) 
-    data_final = []
-##array of type UInt8 with unitialized values, size of the data in input buffer
-while bytes_waiting > 0
-    myarray = Vector{UInt8}(undef, bytes_waiting)
-    println("Found $bytes_waiting bytes in buffer")
-    bytes_read = readbytes!(sp, myarray, bytes_waiting)
-    #println("bytes_read worked")
-    converted_data = String(myarray[1:bytes_read])
-    #println("converted_data")
-    println(converted_data)
-    push!(data_final, converted_data)
-    println("datafinal push worked")
-    bytes_waiting = bytesavailable(sp)
-    #println("bytes_waiting") 
+    function reading()
+        nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
+        println(nbytes)
+        if nbytes > 0
+            data = read(sp, 10)
+            println("Received: ", String(data))
 
-end
-    println(data_final)
+        else
+            println("No data received.")
+        end
+    end
+   
+    write(sp, "version\n")
+    sleep(0.5)
+    reading()
+
+    write(sp, "\n")
+    sleep(0.5)
+    reading()
+
+    sp_flush(sp, SP_BUF_INPUT)
+    write(sp, "mstop 8\n")
+    sleep(0.5)
+    reading()
+
+    write(sp, "\n")
+    sleep(0.5)
+    reading()
+
     sp_flush(sp, SP_BUF_BOTH)
     close(sp)
     sleep(1)
-catch e
+   
+    catch e
     println("Failed to open $port. Error: ", e)
 end
 #The following commands are available:
