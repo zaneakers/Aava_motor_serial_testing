@@ -14,6 +14,7 @@ try
     sleep(1)
 
     bytes_waiting = bytesavailable(sp) 
+    data_final = []
 ##array of type UInt8 with unitialized values, size of the data in input buffer
 while bytes_waiting > 0
     myarray = Vector{UInt8}(undef, bytes_waiting)
@@ -23,10 +24,13 @@ while bytes_waiting > 0
     converted_data = String(myarray[1:bytes_read])
     #println("converted_data")
     println(converted_data)
+    push!(data_final, converted_data)
+    println("datafinal push worked")
     bytes_waiting = bytesavailable(sp)
     #println("bytes_waiting") 
 
 end
+    println(data_final)
     sp_flush(sp, SP_BUF_BOTH)
     close(sp)
     sleep(1)
