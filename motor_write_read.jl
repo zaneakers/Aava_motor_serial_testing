@@ -36,7 +36,8 @@ positionlayout = Layout(
 ##create plots
 
 ############WRITE############################
-write(sp, "version \n")    
+write(sp, "version \n")
+    
 
 sleep(0.5)
 ############READ#############################
