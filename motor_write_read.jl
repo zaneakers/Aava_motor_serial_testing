@@ -3,14 +3,16 @@ using PlotlyJS
 
 ### This script is used to read data from a serial port and parse it into a DataFrame
 
-list_ports()
+ports = list_ports()
+println(ports)
 
-sp = LibSerialPort.open("COM1", 115200) 
+port = "/dev/ttyUSB12"
+sp = LibSerialPort.open(port, 115200) 
 #open allows configuring data framing parameters like ndatabits, parity, and nstopbits.
 # deafult is 8N1
 
 ##clear both buffers, use default(no flow control), flow control used to pause sender when needed
-set_flow_control(sp)
+
 #flush input and output buffers
 sp_flush(sp, SP_BUF_BOTH)
 
@@ -33,6 +35,11 @@ positionlayout = Layout(
 )
 ##create plots
 
+############WRITE############################
+write(sp, "version \n")    
+
+sleep(0.5)
+############READ#############################
 ### find number of bytes in input buffer, create a new buffer, and read bytes into it
 
 bytes_waiting = sp_input_waiting(sp) 
@@ -75,4 +82,4 @@ display(plt2)
 CSV.write("motor_pos_adc.csv", df)
 
 close(sp)
-
+sleep(1)
