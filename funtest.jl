@@ -4,21 +4,29 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB13"
+port = "/dev/ttyUSB17"
 try
     sp = LibSerialPort.open(port, 115200)
     sp_flush(sp, SP_BUF_BOTH)
+    #write(sp, "mtime \n")
     write(sp, "mslow\n")
     #write(sp, "helpfff\n")
-    sleep(0.5)
-    nbytes = bytesavailable(sp)
-    if nbytes > 0
-        data = read(sp, nbytes)
-        println("Received: ", String(data))
-    else
-        println("No data received.")
-    end
-    nonblocking_read(sp)
+    sleep(1)
+
+    bytes_waiting = bytesavailable(sp) 
+##array of type UInt8 with unitialized values, size of the data in input buffer
+while bytes_waiting > 0
+    myarray = Vector{UInt8}(undef, bytes_waiting)
+    println("Found $bytes_waiting bytes in buffer")
+    bytes_read = readbytes!(sp, myarray, bytes_waiting)
+    #println("bytes_read worked")
+    converted_data = String(myarray[1:bytes_read])
+    #println("converted_data")
+    println(converted_data)
+    bytes_waiting = bytesavailable(sp)
+    #println("bytes_waiting") 
+
+end
     sp_flush(sp, SP_BUF_BOTH)
     close(sp)
     sleep(1)
