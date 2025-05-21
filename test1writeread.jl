@@ -4,7 +4,7 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB0"
+port = "/dev/ttyUSB1"
 
 #input buffer for laptop holds the output of the device
 #output buffer for laptop holds data to be sent to device
@@ -15,10 +15,9 @@ try
     ###CHECK###
     nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
     println(nbytes)
-    
-   
 
     write(sp, "\nversion\n")
+    sp_drain(sp)
     sleep(0.5)
 
     ###CHECK###
@@ -35,6 +34,7 @@ try
     end
     sleep(0.5)
     write(sp, "mstop 589\n")
+    sp_drain(sp)
     sleep(0.5)
 
     ###CHECK###
