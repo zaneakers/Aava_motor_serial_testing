@@ -4,22 +4,28 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB3"
+port = "/dev/ttyUSB0"
 
+#input buffer for laptop holds the output of the device
+#output buffer for laptop holds data to be sent to device
 
 try
     sp = LibSerialPort.open(port, 115200)
-    sp_flush(sp, SP_BUF_INPUT)
 
+    ###CHECK###
     nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
     println(nbytes)
+    
+   
 
     write(sp, "\nversion\n")
     sleep(0.5)
+
+    ###CHECK###
     nbytes = bytesavailable(sp)
     println(nbytes)
 
-    #same as a nonblocking_read?
+    #same as a nonblocking_read? no, nonblocking read outputs in vector(UINT8) form, w bit values
     if nbytes > 0
         data = read(sp, nbytes)
         println("Received: ", String(data))
@@ -27,8 +33,19 @@ try
     else
         println("No data received.")
     end
-    close(sp)
+    sleep(0.5)
+    write(sp, "mstop 589\n")
+    sleep(0.5)
 
+    ###CHECK###
+    nbytes = bytesavailable(sp)
+    println(nbytes)
+
+    println(String(read(sp)))
+
+
+    sleep(0.5)
+    close(sp)
    
     catch e
     println("Failed to open $port. Error: ", e)
