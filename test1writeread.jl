@@ -16,7 +16,8 @@ port = "/dev/ttyUSB10"
 
 try
     sp = LibSerialPort.open(port, 115200)
-    set_flow_control(sp; xonxoff=SP_XONXOFF_INOUT)
+    set_flow_control(sp; xonxoff=SP_XONXOFF_INOUT, rts=SP_RTS_ON, cts=SP_CTS_FLOW_CONTROL, 
+    dtr=SP_DTR_ON)
 
 
     emptybuff = []
