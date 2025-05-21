@@ -4,45 +4,23 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB25"
+port = "/dev/ttyUSB1"
 
 
 try
     sp = LibSerialPort.open(port, 115200)
     sp_flush(sp, SP_BUF_BOTH)
 
-    function reading()
-        nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
-        println(nbytes)
-        if nbytes > 0
-            data = read(sp, 10)
-            println("Received: ", String(data))
+    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
+    println(nbytes)
+    if nbytes > 0
+        data = read(sp, nbytes)
+        println("Received: ", String(data))
 
-        else
-            println("No data received.")
-        end
+    else
+        println("No data received.")
     end
-   
-    write(sp, "version\n")
-    sleep(0.5)
-    reading()
 
-    write(sp, "\n")
-    sleep(0.5)
-    reading()
-
-    sp_flush(sp, SP_BUF_INPUT)
-    write(sp, "mstop 8\n")
-    sleep(0.5)
-    reading()
-
-    write(sp, "\n")
-    sleep(0.5)
-    reading()
-
-    sp_flush(sp, SP_BUF_BOTH)
-    close(sp)
-    sleep(1)
    
     catch e
     println("Failed to open $port. Error: ", e)
