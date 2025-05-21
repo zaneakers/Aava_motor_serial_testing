@@ -4,7 +4,7 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB1"
+port = "/dev/ttyUSB2"
 
 
 try
@@ -13,6 +13,12 @@ try
 
     nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
     println(nbytes)
+
+    write(sp, "\n")
+    sleep(0.5)
+    nbytes = bytesavailable(sp)
+    println(nbytes)
+
     if nbytes > 0
         data = read(sp, nbytes)
         println("Received: ", String(data))
