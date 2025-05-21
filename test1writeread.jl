@@ -4,7 +4,7 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB1"
+port = "/dev/ttyUSB4"
 
 #input buffer for laptop holds the output of the device
 #output buffer for laptop holds data to be sent to device
@@ -14,24 +14,24 @@ try
 
     write(sp, "\nversion\n")
     sp_drain(sp)
-    sleep(0.5)
-
-    #same as a nonblocking_read? no, nonblocking read outputs in vector(UINT8) form, w bit values
+    sleep(0.05)
+    
+    println("Going to read all available nversion bytes from sp")
+    nbytes = bytesavailable(sp)
     if nbytes > 0
         data = read(sp, nbytes)
         println("Received: ", String(data))
-
     else
         println("No data received.")
     end
 
-    sleep(0.5)
+    sleep(0.05)
     write(sp, "mstop 589\n")
     sp_drain(sp)
-    sleep(0.5)
-
+    sleep(0.05)
+    println("Going to read all available mstop bytes from sp")
     println(String(read(sp)))
-    sleep(0.5)
+    sleep(0.05)
 
     close(sp)
    
