@@ -4,7 +4,7 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB10"
+port = "/dev/ttyUSB11"
 
 #input buffer for laptop holds the output of the device
 #output buffer for laptop holds data to be sent to device
@@ -16,8 +16,7 @@ port = "/dev/ttyUSB10"
 
 try
     sp = LibSerialPort.open(port, 115200)
-    set_flow_control(sp; xonxoff=SP_XONXOFF_INOUT, rts=SP_RTS_ON, cts=SP_CTS_FLOW_CONTROL, 
-    dtr=SP_DTR_ON)
+    set_flow_control(sp; xonxoff=SP_XONXOFF_INOUT, rts=SP_RTS_ON, dtr=SP_DTR_ON)
 
 
     emptybuff = []
@@ -34,16 +33,50 @@ try
     data=String(read(sp, nbytes))
     push!(emptybuff, data)
 
-    start_time = time()
-while time() - start_time < 5.0
-    nbytes = bytesavailable(sp)
-    if nbytes > 0
-        data = String(read(sp, nbytes))
-        push!(emptybuff, data)
-    end
-    sleep(0.05)  # avoid busy waiting
-end
+write(sp, "\n")
+    sp_drain(sp)
+    sleep(0.5)
+     ###CHECK###
+    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
+    println("bytes in input buffer after write version\n",nbytes)
+    data=String(read(sp, nbytes))
+    push!(emptybuff, data)
 
+    write(sp, "\n")
+    sp_drain(sp)
+    sleep(0.5)
+     ###CHECK###
+    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
+    println("bytes in input buffer after write version\n",nbytes)
+    data=String(read(sp, nbytes))
+    push!(emptybuff, data)
+
+    write(sp, "\n")
+    sp_drain(sp)
+    sleep(0.5)
+     ###CHECK###
+    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
+    println("bytes in input buffer after write version\n",nbytes)
+    data=String(read(sp, nbytes))
+    push!(emptybuff, data)
+
+    write(sp, "\n")
+    sp_drain(sp)
+    sleep(0.5)
+     ###CHECK###
+    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
+    println("bytes in input buffer after write version\n",nbytes)
+    data=String(read(sp, nbytes))
+    push!(emptybuff, data)
+
+    write(sp, "\n")
+    sp_drain(sp)
+    sleep(0.5)
+     ###CHECK###
+    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
+    println("bytes in input buffer after write version\n",nbytes)
+    data=String(read(sp, nbytes))
+    push!(emptybuff, data)
 
     close(sp)
     println(emptybuff)
