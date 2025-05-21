@@ -19,9 +19,9 @@ try
     emptybuff = []
     sp_flush(sp, SP_BUF_BOTH)
 
-    write(sp, "\n")
+    write(sp, "\n\n\n\n\n\n\n\n")
     sp_drain(sp)
-    sleep(0.05)
+    sleep(0.5)
      ###CHECK###
     nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
     println(nbytes)
@@ -29,20 +29,20 @@ try
     push!(emptybuff, data)
     println(data)
 
-    write(sp, "\n")
+    write(sp, "\n\n\n\n\n\n\n\n\n")
     sp_drain(sp)
-    sleep(0.05)
+    sleep(0.5)
      ###CHECK###
     nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
     println(nbytes)
     data=String(read(sp))
     push!(emptybuff, data)
     println(data)
-    sleep(0.05)
+    sleep(0.5)
 
     write(sp, "mstop 589\n")
     sp_drain(sp)
-    sleep(0.05)
+    sleep(0.5)
      ###CHECK###
     nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
     println(nbytes)
