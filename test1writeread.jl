@@ -4,7 +4,7 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB4"
+port = "/dev/ttyUSB6"
 
 #input buffer for laptop holds the output of the device
 #output buffer for laptop holds data to be sent to device
@@ -16,25 +16,33 @@ port = "/dev/ttyUSB4"
 
 try
     sp = LibSerialPort.open(port, 115200)
+    emptybuff = []
+    sp_flush(sp, SP_BUF_BOTH)
+    write(sp, "\n")
+    sp_drain(sp)
+    data=String(read(sp))
+    push!(emptybuff, data)
+    println(data)
 
     write(sp, "\nversion\n")
     sp_drain(sp)
-    
-    println("Going to read all available nversion bytes from sp")
+    sleep(0.05)
+    data=String(read(sp))
+    push!(emptybuff, data)
+    println(data)
     sleep(0.05)
 
-    println(String(nonblocking_read(sp)))
-
-    sleep(0.05)
     write(sp, "mstop 589\n")
     sp_drain(sp)
     sleep(0.05)
     println("Going to read all available mstop bytes from sp")
-    println(String(nonblocking_read(sp)))
+    data=String(read(sp))
+    push!(emptybuff, data)
+    println(data)
     sleep(0.05)
 
     close(sp)
-   
+    println(emptybuff)
     catch e
     println("Failed to open $port. Error: ", e)
 
