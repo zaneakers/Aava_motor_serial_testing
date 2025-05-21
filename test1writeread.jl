@@ -4,7 +4,7 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB6"
+port = "/dev/ttyUSB8"
 
 #input buffer for laptop holds the output of the device
 #output buffer for laptop holds data to be sent to device
@@ -16,29 +16,24 @@ port = "/dev/ttyUSB6"
 
 try
     sp = LibSerialPort.open(port, 115200)
+    set_flow_control(sp)
+
     emptybuff = []
     sp_flush(sp, SP_BUF_BOTH)
-
-    write(sp, "\n\n\n\n\n\n\n\n")
+    
+    print_port_settings(sp)
+    
+    write(sp, "version\n")
     sp_drain(sp)
     sleep(0.5)
      ###CHECK###
     nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
-    println(nbytes)
-    data=String(read(sp))
+    println("bytes in input buffer after write version\n",nbytes)
+    data=String(read(sp, nbytes))
     push!(emptybuff, data)
-    println(data)
 
-    write(sp, "\n\n\n\n\n\n\n\n\n")
-    sp_drain(sp)
-    sleep(0.5)
-     ###CHECK###
-    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
-    println(nbytes)
-    data=String(read(sp))
-    push!(emptybuff, data)
-    println(data)
-    sleep(0.5)
+    println(split(data, '\n'))
+    #sleep(0.05)
 
     write(sp, "mstop 589\n")
     sp_drain(sp)
@@ -47,10 +42,10 @@ try
     nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
     println(nbytes)
     println("Going to read all available mstop bytes from sp")
-    data=String(read(sp))
+    data=String(read(sp, nbytes))
     push!(emptybuff, data)
     println(data)
-    sleep(0.05)
+    #sleep(0.05)
 
     close(sp)
     println(emptybuff)
