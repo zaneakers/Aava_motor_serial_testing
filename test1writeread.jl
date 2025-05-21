@@ -18,30 +18,39 @@ try
     sp = LibSerialPort.open(port, 115200)
     emptybuff = []
     sp_flush(sp, SP_BUF_BOTH)
-    
+
     write(sp, "\n")
     sp_drain(sp)
-    sleep(0.5)
+    sleep(0.05)
+     ###CHECK###
+    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
+    println(nbytes)
     data=String(read(sp))
     push!(emptybuff, data)
     println(data)
 
-    write(sp, "\nversion\n")
+    write(sp, "version")
     sp_drain(sp)
-    sleep(0.5)
+    sleep(0.05)
+     ###CHECK###
+    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
+    println(nbytes)
     data=String(read(sp))
     push!(emptybuff, data)
     println(data)
-    sleep(0.5)
+    sleep(0.05)
 
     write(sp, "mstop 589\n")
     sp_drain(sp)
-    sleep(0.5)
+    sleep(0.05)
+     ###CHECK###
+    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
+    println(nbytes)
     println("Going to read all available mstop bytes from sp")
     data=String(read(sp))
     push!(emptybuff, data)
     println(data)
-    sleep(0.5)
+    sleep(0.05)
 
     close(sp)
     println(emptybuff)
