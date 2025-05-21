@@ -12,17 +12,9 @@ port = "/dev/ttyUSB1"
 try
     sp = LibSerialPort.open(port, 115200)
 
-    ###CHECK###
-    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
-    println(nbytes)
-
     write(sp, "\nversion\n")
     sp_drain(sp)
     sleep(0.5)
-
-    ###CHECK###
-    nbytes = bytesavailable(sp)
-    println(nbytes)
 
     #same as a nonblocking_read? no, nonblocking read outputs in vector(UINT8) form, w bit values
     if nbytes > 0
@@ -32,19 +24,15 @@ try
     else
         println("No data received.")
     end
+
     sleep(0.5)
     write(sp, "mstop 589\n")
     sp_drain(sp)
     sleep(0.5)
 
-    ###CHECK###
-    nbytes = bytesavailable(sp)
-    println(nbytes)
-
     println(String(read(sp)))
-
-
     sleep(0.5)
+
     close(sp)
    
     catch e
