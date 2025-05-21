@@ -29,7 +29,7 @@ try
     push!(emptybuff, data)
     println(data)
 
-    write(sp, "version")
+    write(sp, "\n")
     sp_drain(sp)
     sleep(0.05)
      ###CHECK###
