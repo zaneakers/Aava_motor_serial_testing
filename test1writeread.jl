@@ -8,29 +8,29 @@ port = "/dev/ttyUSB4"
 
 #input buffer for laptop holds the output of the device
 #output buffer for laptop holds data to be sent to device
+#not a sleep issue
+#echo included consistently, message infrequently included
+#clumping issue, mstop only returns error 003 if given multiple parameters,
+# which could most likely occur if the version command ended up mixed with it 
+#in the output buffer,
 
 try
     sp = LibSerialPort.open(port, 115200)
 
     write(sp, "\nversion\n")
     sp_drain(sp)
-    sleep(0.05)
     
     println("Going to read all available nversion bytes from sp")
-    nbytes = bytesavailable(sp)
-    if nbytes > 0
-        data = read(sp, nbytes)
-        println("Received: ", String(data))
-    else
-        println("No data received.")
-    end
+    sleep(0.05)
+
+    println(String(nonblocking_read(sp)))
 
     sleep(0.05)
     write(sp, "mstop 589\n")
     sp_drain(sp)
     sleep(0.05)
     println("Going to read all available mstop bytes from sp")
-    println(String(read(sp)))
+    println(String(nonblocking_read(sp)))
     sleep(0.05)
 
     close(sp)
