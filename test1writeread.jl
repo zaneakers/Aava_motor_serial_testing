@@ -4,21 +4,22 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB2"
+port = "/dev/ttyUSB3"
 
 
 try
     sp = LibSerialPort.open(port, 115200)
-    sp_flush(sp, SP_BUF_BOTH)
+    sp_flush(sp, SP_BUF_INPUT)
 
     nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
     println(nbytes)
 
-    write(sp, "\n")
+    write(sp, "\nversion\n")
     sleep(0.5)
     nbytes = bytesavailable(sp)
     println(nbytes)
 
+    #same as a nonblocking_read?
     if nbytes > 0
         data = read(sp, nbytes)
         println("Received: ", String(data))
@@ -26,11 +27,14 @@ try
     else
         println("No data received.")
     end
+    close(sp)
 
    
     catch e
     println("Failed to open $port. Error: ", e)
+
 end
+
 #The following commands are available:
 # version   - Displays firmware version.
 # clr       - Clear Motor Position Values
