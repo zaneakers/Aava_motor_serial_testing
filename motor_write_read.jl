@@ -36,14 +36,18 @@ positionlayout = Layout(
 ##create plots
 
 ############WRITE############################
-write(sp, "version \n")
-    
 
+    write(sp, "\n")
+    for i in 1:11
+        write(sp, "mstop 33\r\n")
+        sp_drain(sp)
+        sleep(0.1)
+    end
 sleep(0.5)
 ############READ#############################
 ### find number of bytes in input buffer, create a new buffer, and read bytes into it
 
-bytes_waiting = sp_input_waiting(sp) 
+bytes_waiting = bytesavailable(sp)
 ##array of type UInt8 with unitialized values, size of the data in input buffer
 while bytes_waiting > 0
     myarray = Vector{UInt8}(undef, bytes_waiting)
@@ -65,22 +69,10 @@ while bytes_waiting > 0
         end
         push!(time, time[end] + 0.05) #increment time by 0.05 ms for every match
     end
-    bytes_waiting = sp_input_waiting(sp)
+    bytes_waiting = bytesavailable(sp)
     
 end
 
-df = DataFrame(Current=ADC_data, Position=Positional_data, Time = time)
-
-trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="Position vs Time",
-    line=attr(color="black", width=2))
-trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="Current vs Time",
-    line=attr(color="black", width=2))
-
-plt1 = PlotlyJS.plot(trace1, positionlayout)
-plt2 = PlotlyJS.plot(trace2, currentlayout)
-display(plt1)
-display(plt2)
-CSV.write("motor_pos_adc.csv", df)
 
 close(sp)
 sleep(1)

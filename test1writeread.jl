@@ -20,39 +20,24 @@ try
 
 
     emptybuff = []
-    
-    
-    print_port_settings(sp)
-    
-
- start_time = time()
-#while time() - start_time < 3.0
     write(sp, "\n")
     for i in 1:11
-        write(sp, "version\r\n")
+        write(sp, "mstop 33\r\n")
         sp_drain(sp)
         sleep(0.1)
     end
-   
-    sp_drain(sp)
-    sleep(0.5)
-     ###CHECK###
-    nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
-    println("bytes in input buffer after write version\n",nbytes)
+    
     data=String(nonblocking_read(sp))
-    #println("this is the data after command sent 10 times\n", data)
+    
     push!(emptybuff, data)
 
-    sleep(0.005)  # avoid busy waiting
-#end
+    sleep(0.005)  
 
-    sp_flush(sp, SP_BUF_BOTH)
-    sleep(0.05)
     close(sp)
 
     #println(pop!(emptybuff))
     #println(emptybuff)
-    println("last value of emptybuff array\n")
+    #println("last value of emptybuff array\n")
     println(last(emptybuff))
 
     catch e
