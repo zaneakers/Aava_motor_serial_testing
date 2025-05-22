@@ -137,6 +137,6 @@ trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="Current v
 
 plt1 = PlotlyJS.plot(trace1, positionlayout)
 plt2 = PlotlyJS.plot(trace2, currentlayout)
-display(plt1)
-display(plt2)
+PlotlyJS.savefig(plt1, "position_plot.html")
+PlotlyJS.savefig(plt2, "current_plot.html")
 CSV.write("motor_pos_adc.csv", df)
