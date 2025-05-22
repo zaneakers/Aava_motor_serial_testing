@@ -4,7 +4,7 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB2"
+port = "/dev/ttyUSB3"
 
 #input buffer for laptop holds the output of the device
 #output buffer for laptop holds data to be sent to device
@@ -16,29 +16,57 @@ port = "/dev/ttyUSB2"
 
 try
     sp = LibSerialPort.open(port, 115200)
-    set_flow_control(sp; xonxoff=SP_XONXOFF_INOUT, rts=SP_RTS_ON, dtr=SP_DTR_ON)
+    #set_flow_control(sp; xonxoff=SP_XONXOFF_INOUT, rts=SP_RTS_ON, dtr=SP_DTR_ON)
 
-
-    emptybuff = []
-    write(sp, "\n")
-    for i in 1:11
-        write(sp, "mstop 33\r\n")
+    function smooth()
         sp_drain(sp)
-        sleep(0.1)
+        sleep(0.2)
     end
-    
-    data=String(nonblocking_read(sp))
-    
-    push!(emptybuff, data)
 
-    sleep(0.005)  
+    function readfunct()
+        data=nonblocking_read(sp)
+        
+        push!(emptybuff, data)
+        sleep(0.2)
+    end
+
+    sp_flush(sp, SP_BUF_INPUT)
+    sleep(0.2)
+    emptybuff = []
+  
+    write(sp, "version\r\n")
+        smooth()
+        readfunct()
+    write(sp, "mstop 378\r\n")
+        smooth()
+        readfunct()
+    write(sp, "mslow 240\r\n")
+    smooth()
+    readfunct()
+    write(sp, "mtime 40\r\n")
+    smooth()
+    readfunct()
+    write(sp, "maxdc 80\r\n")
+    smooth()
+    readfunct()
+    write(sp, "pulse 100\r\n")
+    smooth()
+    readfunct()
+    write(sp, "mode 1\r\n")
+    smooth()
+    readfunct()
+    
+    sp_flush(sp, SP_BUF_BOTH)
+    sleep(0.2)  
 
     close(sp)
 
     #println(pop!(emptybuff))
-    #println(emptybuff)
     #println("last value of emptybuff array\n")
-    println(last(emptybuff))
+    for s in emptybuff
+        println(String(s))
+    end
+    #println(last(emptybuff))
 
     catch e
     println("Failed to open $port. Error: ", e)
