@@ -31,6 +31,7 @@ try
     for i in 1:11
         write(sp, "version\r\n")
         sp_drain(sp)
+        sleep(0.1)
     end
    
     sp_drain(sp)
@@ -50,7 +51,7 @@ try
     close(sp)
 
     #println(pop!(emptybuff))
-    println(emptybuff)
+    #println(emptybuff)
     println("last value of emptybuff array\n")
     println(last(emptybuff))
 
