@@ -6,7 +6,7 @@ using PlotlyJS
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB12"
+port = "/dev/ttyUSB2"
 sp = LibSerialPort.open(port, 115200) 
 #open allows configuring data framing parameters like ndatabits, parity, and nstopbits.
 # deafult is 8N1
@@ -19,7 +19,7 @@ sp_flush(sp, SP_BUF_BOTH)
 ##create containers to hold input (read) data
 ADC_data = Float16[]
 Positional_data = UInt16[]
-time = Float16[0.0] 
+timey = Float16[0.0] 
 ##create plotlyjs figure
 currentlayout = Layout(
     title="Real Time Current vs Time",
@@ -37,24 +37,68 @@ positionlayout = Layout(
 
 ############WRITE############################
 
-    write(sp, "\n")
-    for i in 1:11
-        write(sp, "mstop 33\r\n")
+    function smooth()
+        #println("before drain", sp_output_waiting(sp))
+        sleep(0.2)
         sp_drain(sp)
-        sleep(0.1)
+        #println("after drain", sp_output_waiting(sp)) - always zero, checks how many bytes in output buffer
+        
     end
-sleep(0.5)
+
+    function readfunct()
+        #println("before read", bytesavailable(sp))
+        data=nonblocking_read(sp)
+        sleep(0.2)
+        #println("after read", bytesavailable(sp)) #- checks how many bytes in input buffer
+        println(String(data))
+        sleep(0.2)
+    end
+
+    
+    emptybuff = []
+    write(sp, "\n")
+        sleep(0.2)
+        smooth()
+        readfunct()
+    write(sp, "version\r\n")
+        smooth()
+        readfunct()
+        sp_flush(sp, SP_BUF_BOTH)
+        sleep(0.1)
+    write(sp, "mstop 378\r\n")
+        smooth()
+        readfunct()
+    write(sp, "mslow 240\r\n")
+        smooth()
+        readfunct()
+    write(sp, "mtime 40\r\n")
+        smooth()
+        readfunct()
+    write(sp, "maxdc 80\r\n")
+        smooth()
+        readfunct()
+    write(sp, "pulse 100\r\n")
+        smooth()
+        readfunct()
+    write(sp, "mode 1\r\n")
+        smooth()
+        readfunct()
+write(sp, "go\r\n")
+
+smooth()
+readfunct()
 ############READ#############################
 ### find number of bytes in input buffer, create a new buffer, and read bytes into it
 
-bytes_waiting = bytesavailable(sp)
+sleep(9)
 ##array of type UInt8 with unitialized values, size of the data in input buffer
-while bytes_waiting > 0
-    myarray = Vector{UInt8}(undef, bytes_waiting)
-    println("Found $bytes_waiting bytes in buffer")
-    bytes_read = readbytes!(sp, myarray, bytes_waiting)
+while bytesavailable(sp) > 0
+    nbytes = bytesavailable(sp)
+    myarray = Vector{UInt8}(undef, nbytes)
+    println("Found $nbytes bytes in buffer")
+    bytes_read = readbytes!(sp, myarray, nbytes)
     converted_data = String(myarray[1:bytes_read])
-
+    println("converted data ", converted_data)
     ## divide data into positional and ADC data ##
     for m in eachmatch(r"\d+\.\d+|\d+", converted_data) 
     #matches floats first then ints, regex ignores spaces
@@ -67,12 +111,32 @@ while bytes_waiting > 0
         else
             println("match not working")
         end
-        push!(time, time[end] + 0.05) #increment time by 0.05 ms for every match
+        push!(timey, timey[end] + 0.05) #increment timey by 0.05 ms for every match
     end
-    bytes_waiting = bytesavailable(sp)
     
 end
-
+sleep(0.5)
+write(sp, "\n")
+write(sp, "stop\r\n")
 
 close(sp)
 sleep(1)
+
+
+minlen = minimum(length.([ADC_data, Positional_data, timey]))
+df = DataFrame(
+    Current = ADC_data[1:minlen],
+    Position = Positional_data[1:minlen],
+    Time = timey[2:minlen+1]  # skip initial 0.0
+)
+
+trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="Position vs Time",
+    line=attr(color="black", width=2))
+trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="Current vs Time",
+    line=attr(color="black", width=2))
+
+plt1 = PlotlyJS.plot(trace1, positionlayout)
+plt2 = PlotlyJS.plot(trace2, currentlayout)
+display(plt1)
+display(plt2)
+CSV.write("motor_pos_adc.csv", df)

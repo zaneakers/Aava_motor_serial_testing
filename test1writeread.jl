@@ -1,6 +1,6 @@
 using LibSerialPort
 
-port = "/dev/ttyUSB0"
+port = "/dev/ttyUSB4"
 println(list_ports())
 
 
@@ -21,7 +21,8 @@ try
         data=nonblocking_read(sp)
         sleep(0.2)
         #println("after read", bytesavailable(sp)) #- checks how many bytes in input buffer
-        push!(emptybuff, data)
+        println(String(data))
+        #push!(emptybuff, data)
         sleep(0.2)
     end
 
@@ -37,26 +38,26 @@ try
     write(sp, "version\r\n")
         smooth()
         readfunct()
-        sp_flush(sp, SP_BUF_BOTH)
+        #sp_flush(sp, SP_BUF_BOTH)
         sleep(0.1)
     write(sp, "mstop 378\r\n")
         smooth()
         readfunct()
     write(sp, "mslow 240\r\n")
-    smooth()
-    readfunct()
+        smooth()
+        readfunct()
     write(sp, "mtime 40\r\n")
-    smooth()
-    readfunct()
+        smooth()
+        readfunct()
     write(sp, "maxdc 80\r\n")
-    smooth()
-    readfunct()
+        smooth()
+        readfunct()
     write(sp, "pulse 100\r\n")
-    smooth()
-    readfunct()
+        smooth()
+        readfunct()
     write(sp, "mode 1\r\n")
-    smooth()
-    readfunct()
+        smooth()
+        readfunct()
     
     sp_flush(sp, SP_BUF_BOTH)
     println(bytesavailable(sp))
