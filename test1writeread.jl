@@ -1,9 +1,5 @@
 using LibSerialPort
 
-
-ports = list_ports()
-println(ports)
-
 port = "/dev/ttyUSB3"
 
 #input buffer for laptop holds the output of the device
@@ -17,26 +13,38 @@ port = "/dev/ttyUSB3"
 try
     sp = LibSerialPort.open(port, 115200)
     #set_flow_control(sp; xonxoff=SP_XONXOFF_INOUT, rts=SP_RTS_ON, dtr=SP_DTR_ON)
-
+    
     function smooth()
-        sp_drain(sp)
+        #println("before drain", sp_output_waiting(sp))
         sleep(0.2)
+        sp_drain(sp)
+        #println("after drain", sp_output_waiting(sp)) - always zero, checks how many bytes in output buffer
+        
     end
 
     function readfunct()
+        #println("before read", bytesavailable(sp))
         data=nonblocking_read(sp)
-        
+        sleep(0.2)
+        #println("after read", bytesavailable(sp)) #- checks how many bytes in input buffer
         push!(emptybuff, data)
         sleep(0.2)
     end
 
-    sp_flush(sp, SP_BUF_INPUT)
-    sleep(0.2)
+    sp_flush(sp, SP_BUF_BOTH)
+    println(bytesavailable(sp))
+    println(sp_output_waiting(sp))
+    
     emptybuff = []
-  
+    write(sp, "\n")
+        sleep(0.2)
+        smooth()
+        readfunct()
     write(sp, "version\r\n")
         smooth()
         readfunct()
+        sp_flush(sp, SP_BUF_BOTH)
+        sleep(0.1)
     write(sp, "mstop 378\r\n")
         smooth()
         readfunct()
@@ -57,9 +65,13 @@ try
     readfunct()
     
     sp_flush(sp, SP_BUF_BOTH)
-    sleep(0.2)  
-
+    println(bytesavailable(sp))
+    println(sp_output_waiting(sp))
+    
     close(sp)
+
+    #is write not sending the full command
+    # is device not receiving full command from write (laptop output buffer)
 
     #println(pop!(emptybuff))
     #println("last value of emptybuff array\n")
