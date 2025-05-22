@@ -1,14 +1,8 @@
 using LibSerialPort
 
-port = "/dev/ttyUSB3"
+port = "/dev/ttyUSB0"
+println(list_ports())
 
-#input buffer for laptop holds the output of the device
-#output buffer for laptop holds data to be sent to device
-#not a sleep issue
-#echo included consistently, message infrequently included
-#clumping issue, mstop only returns error 003 if given multiple parameters,
-# which could most likely occur if the version command ended up mixed with it 
-#in the output buffer,
 
 try
     sp = LibSerialPort.open(port, 115200)
@@ -70,15 +64,11 @@ try
     
     close(sp)
 
-    #is write not sending the full command
-    # is device not receiving full command from write (laptop output buffer)
-
-    #println(pop!(emptybuff))
-    #println("last value of emptybuff array\n")
+    
     for s in emptybuff
         println(String(s))
     end
-    #println(last(emptybuff))
+    
 
     catch e
     println("Failed to open $port. Error: ", e)
