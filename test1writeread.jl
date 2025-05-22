@@ -4,7 +4,7 @@ using LibSerialPort
 ports = list_ports()
 println(ports)
 
-port = "/dev/ttyUSB12"
+port = "/dev/ttyUSB2"
 
 #input buffer for laptop holds the output of the device
 #output buffer for laptop holds data to be sent to device
@@ -26,18 +26,12 @@ try
     
 
  start_time = time()
-while time() - start_time < 3.0
-    write(sp, "version \n")
-    write(sp, "version \n")
-    write(sp, "version \n")
-    write(sp, "version \n")
-    write(sp, "version \n")
-    write(sp, "version \n")
-    write(sp, "version \n")
-    write(sp, "version \n")
-    write(sp, "version \n")
-    write(sp, "version \n")
-    
+#while time() - start_time < 3.0
+    write(sp, "\n")
+    for i in 1:11
+        write(sp, "version\r\n")
+        sp_drain(sp)
+    end
    
     sp_drain(sp)
     sleep(0.5)
@@ -45,16 +39,21 @@ while time() - start_time < 3.0
     nbytes = bytesavailable(sp) #non blocking, deterimine serial data in input/receive buffer
     println("bytes in input buffer after write version\n",nbytes)
     data=String(nonblocking_read(sp))
-    
+    #println("this is the data after command sent 10 times\n", data)
     push!(emptybuff, data)
 
     sleep(0.005)  # avoid busy waiting
-end
+#end
 
-sp_flush(sp, SP_BUF_BOTH)
-sleep(0.05)
+    sp_flush(sp, SP_BUF_BOTH)
+    sleep(0.05)
     close(sp)
+
+    #println(pop!(emptybuff))
     println(emptybuff)
+    println("last value of emptybuff array\n")
+    println(last(emptybuff))
+
     catch e
     println("Failed to open $port. Error: ", e)
 
