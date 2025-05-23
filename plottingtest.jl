@@ -7,7 +7,7 @@ using Random
 n = 100  # number of data points
 ADC_data = rand(Float16, n)
 Positional_data = rand(UInt16, n)
-time = collect(Float16, 0.0:1.0:(n-1))
+timey = collect(Float16, 0.0:1.0:(n-1))
 
 
 currentlayout = Layout(
@@ -51,29 +51,19 @@ Parameters = ["mstop $mstopvalue", "mslow $mslowvalue", "mtime $mtimevalue", "ma
     write(sp, Parameters[6])
      
 ######Dataframe############
-newdf = DataFrame(Current=ADC_data, Position=Positional_data, Time = time)
+
+minlen = minimum(length.([ADC_data, Positional_data, timey]))
+newdf = DataFrame(
+    Current = ADC_data[1:minlen],
+    Position = Positional_data[1:minlen],
+    Time = timey[1:minlen]  # skip initial 0.0
+)
 
 ##pad the parameters column with missing values 
-
 padded= vcat(Parameters, fill(missing, nrow(newdf) - length(Parameters)))
 parameterdf = DataFrame(Parameters = padded)
-for r in eachrow(parameterdf)
-    println(r)
-end
+#combine data dataframe and list of parameters dataframe
 newandparameterdf = hcat(parameterdf, newdf)
-
-###################PLOTTING#############################
-namey = join(Parameters, "<br> ")
-
-trace1 = PlotlyJS.scatter(x=newdf.Time, y=newdf.Position, mode="lines", name="Settings--- <br> $namey",
-    line=attr(color="black", width=2), showlegend=true)
-trace2 = PlotlyJS.scatter(x=newdf.Time, y=newdf.Current, mode="lines", name="Settings <br> $namey",
-    line=attr(color="black", width=2), showlegend=true)
-
-plt1 = PlotlyJS.plot(trace1, positionlayout)
-plt2 = PlotlyJS.plot(trace2, currentlayout)
-#display(plt1)
-#display(plt2)
 
 #########################CSV file########################################################
 csvfile = "motor_postest6_adc.csv"
@@ -86,20 +76,61 @@ if isfile(csvfile)
         
     if newdfheader != firstdfheader # if headers different, add to file
         df_mostrecent = hcat(firstdf, newdf, makeunique=true)
-            CSV.write(csvfile, df_mostrecent)
+        CSV.write(csvfile, df_mostrecent)
+        notequal = true
 
     else# if headers are same and file exists, do nothing
             println("values are the same, no change to file")
     end
 
 else
-    CSV.write(csvfile, newandparameterdf)
+    df_mostrecent = newandparameterdf
+    CSV.write(csvfile, df_mostrecent)
+
 end
-### comparison between old and new data###
-##create headers from both dataframes each containing first 5 values of each column
 
+###################PLOTTING#############################
+#make string of parameters to put in legend of plots
+namey = join(Parameters, "<br> ")
 
+#traces = scatter[]  # collect all traces in an array
+traceinitial = DataFrame()
+for numb in 0:9
+    colname = "Position_$numb"
+    if colname in names(df_mostrecent)
+        trace = PlotlyJS.scatter(
+            x = df_mostrecent.Time,
+            y = df_mostrecent[!, colname],
+            mode = "lines",
+            name = "Settings--- <br> $namey <br> $colname",
+            line = attr(width=2),
+            showlegend = true
+        )
+        traces = vcat(traceintial, trace)
+        traceinitial = traces
+    end
+    
+end
 
+# Now plot all found traces together
+plotallposition = PlotlyJS.plot(traces, positionlayout)
 
-##Plotting code works
+current_traces = scatter[]  # collect all current traces
 
+for numb in 1:9
+    colname = "Current_$numb"
+    if colname in names(df_mostrecent)
+        trace = PlotlyJS.scatter(
+            x = df_mostrecent.Time,
+            y = df_mostrecent[!, colname],
+            mode = "lines",
+            name = "Settings--- <br> $namey <br> $colname",
+            line = attr(width=2),
+            showlegend = true
+        )
+        push!(current_traces, trace)
+    end
+end
+
+# Plot all found current traces together
+plotallcurrent = PlotlyJS.plot(current_traces, currentlayout)
