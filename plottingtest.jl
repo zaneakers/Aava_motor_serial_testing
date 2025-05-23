@@ -50,14 +50,24 @@ Parameters = ["mstop $mstopvalue", "mslow $mslowvalue", "mtime $mtimevalue", "ma
     
     write(sp, Parameters[6])
      
-
+######Dataframe############
 newdf = DataFrame(Current=ADC_data, Position=Positional_data, Time = time)
 
-###################PLOTTING#############################
+##pad the parameters column with missing values 
 
-trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="$Parameters[1]<br>$Parameters[2]",
+padded= vcat(Parameters, fill(missing, nrow(newdf) - length(Parameters)))
+parameterdf = DataFrame(Parameters = padded)
+for r in eachrow(parameterdf)
+    println(r)
+end
+newandparameterdf = hcat(parameterdf, newdf)
+
+###################PLOTTING#############################
+namey = join(Parameters, "<br> ")
+
+trace1 = PlotlyJS.scatter(x=newdf.Time, y=newdf.Position, mode="lines", name="Settings--- <br> $namey",
     line=attr(color="black", width=2), showlegend=true)
-trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="hello",
+trace2 = PlotlyJS.scatter(x=newdf.Time, y=newdf.Current, mode="lines", name="Settings <br> $namey",
     line=attr(color="black", width=2), showlegend=true)
 
 plt1 = PlotlyJS.plot(trace1, positionlayout)
@@ -66,30 +76,27 @@ plt2 = PlotlyJS.plot(trace2, currentlayout)
 #display(plt2)
 
 #########################CSV file########################################################
-csvfile = "motor_postest4_adc.csv"
+csvfile = "motor_postest6_adc.csv"
 ###check to make sure file exists before comparison
 if isfile(csvfile)
     firstdf = CSV.read(csvfile, DataFrame)
+
+    firstdfheader = [first(firstdf[!, col], 5) for col in names(firstdf)]
+    newdfheader = [first(newdf[!, col], 5) for col in names(newdf)]
+        
+    if newdfheader != firstdfheader # if headers different, add to file
+        df_mostrecent = hcat(firstdf, newdf, makeunique=true)
+            CSV.write(csvfile, df_mostrecent)
+
+    else# if headers are same and file exists, do nothing
+            println("values are the same, no change to file")
+    end
+
 else
-    CSV.write(csvfile, newdf)
+    CSV.write(csvfile, newandparameterdf)
 end
 ### comparison between old and new data###
 ##create headers from both dataframes each containing first 5 values of each column
-for col in names(firstdf)
-    local firstdfheader = first(firstdf[!, col], 5)  # prints first 5 values
-end
-
-for col in names(df)
-    local newdfheader = first(newdf[!, col], 5)
-end
-
-if newdfheader != firstdfheader # if headers different, add to file
-    df_mostrecent = hcat(firstdf, newdf, makeunique=true)
-    CSV.write(csvfile, df_mostrecent)
-
-else# if headers are same and file exists, do nothing
-    println("values are the same, no change to file")
-end
 
 
 
