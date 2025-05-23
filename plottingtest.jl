@@ -47,7 +47,7 @@ end
 write(sp, "go\r\n")
 
 
-df = DataFrame(Current=ADC_data, Position=Positional_data, Time = time)
+newdf = DataFrame(Current=ADC_data, Position=Positional_data, Time = time)
 
 trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="$cmd1",
     line=attr(color="black", width=2), showlegend=true)
@@ -56,9 +56,35 @@ trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="$cmd1<br>
 
 plt1 = PlotlyJS.plot(trace1, positionlayout)
 plt2 = PlotlyJS.plot(trace2, currentlayout)
-display(plt1)
-display(plt2)
-#CSV.write("motor_pos_adc.csv", df)
+#display(plt1)
+#display(plt2)
+
+###check to make sure file exists before comparison
+if isfile("motor_postest_adc.csv")
+    firstdf = CSV.read("motor_postest_adc.csv", DataFrame)
+else
+    CSV.write("motor_postest3_adc.csv", newdf)
+end
+### comparison between old and new data###
+##create headers from both dataframes each containing first 5 values of each column
+for col in names(firstdf)
+    local firstdfheader = first(firstdf[!, col], 5)  # prints first 5 values
+end
+
+for col in names(df)
+    local newdfheader = first(newdf[!, col], 5)
+end
+
+if newdfheader != firstdfheader # if headers different, add to file
+    df_mostrecent = hcat(firstdf, newdf, makeunique=true)
+    CSV.write("motor_postest_adc.csv", df_mostrecent)
+
+else# if headers are same and file exists, do nothing
+    println("values are the same, no change to file")
+end
+
+
+
 
 ##Plotting code works
 

@@ -133,7 +133,8 @@ df = DataFrame(
     Position = Positional_data[1:minlen],
     Time = timey[2:minlen+1]  # skip initial 0.0
 )
-
+### if first few lines of ADC data and positional data match in csv, 
+##add new data as columns 
 trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="mstop $mstopvalue <br> mslow $mslowvalue 
 <br> mtime $mtimevalue <br> maxdc $maxdctime <br> pulse $pulsevalue <br> mode $modevalue",
     line=attr(color="black", width=2))
