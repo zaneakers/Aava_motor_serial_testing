@@ -27,13 +27,6 @@ try
 
  start_time = time()
 #while time() - start_time < 3.0
-    write(sp, "\n")
-    for i in 1:11
-        write(sp, "version\r\n")
-        sleep(0.1)
-        sp_drain(sp)
-        
-    end
    
     sp_drain(sp)
     sleep(0.1)

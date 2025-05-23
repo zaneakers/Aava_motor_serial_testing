@@ -8,10 +8,7 @@ println(ports)
 
 port = "/dev/ttyUSB2"
 sp = LibSerialPort.open(port, 115200) 
-#open allows configuring data framing parameters like ndatabits, parity, and nstopbits.
-# deafult is 8N1
 
-##clear both buffers, use default(no flow control), flow control used to pause sender when needed
 
 #flush input and output buffers
 sp_flush(sp, SP_BUF_BOTH)
@@ -24,7 +21,7 @@ timey = Float16[0.0]
 currentlayout = Layout(
     title="Real Time Current vs Time",
     xaxis=attr(title="Time (ms)"),
-    yaxis=attr(title="Current"),
+    yaxis=attr(title="Current (A)"),
     legend=attr(x=0.01, y=0.99)
 )
 positionlayout = Layout(
@@ -122,6 +119,7 @@ write(sp, "stop\r\n")
 close(sp)
 sleep(1)
 
+#############DATA PRESENTATION#######################3
 
 minlen = minimum(length.([ADC_data, Positional_data, timey]))
 df = DataFrame(
