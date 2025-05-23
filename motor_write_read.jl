@@ -62,22 +62,28 @@ positionlayout = Layout(
         readfunct()
         sp_flush(sp, SP_BUF_BOTH)
         sleep(0.1)
-    write(sp, "mstop 378\r\n")
+    mstopvalue = "378"
+    write(sp, "mstop $mstopvalue\r\n")
         smooth()
         readfunct()
-    write(sp, "mslow 240\r\n")
+    mslowvalue = "240"
+    write(sp, "mslow $mslowvalue\r\n")
         smooth()
         readfunct()
-    write(sp, "mtime 40\r\n")
+    mtimevalue = "40"
+    write(sp, "mtime $mtimevalue\r\n")
         smooth()
         readfunct()
-    write(sp, "maxdc 80\r\n")
+    maxdctime = "80"
+    write(sp, "maxdc $maxdctime\r\n")
         smooth()
         readfunct()
-    write(sp, "pulse 100\r\n")
+    pulsevalue = "100"
+    write(sp, "pulse $pulsevalue\r\n")
         smooth()
         readfunct()
-    write(sp, "mode 1\r\n")
+    modevalue = "1"
+    write(sp, "mode $modevalue\r\n")
         smooth()
         readfunct()
 write(sp, "go\r\n")
@@ -128,9 +134,11 @@ df = DataFrame(
     Time = timey[2:minlen+1]  # skip initial 0.0
 )
 
-trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="Position vs Time",
+trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="mstop $mstopvalue <br> mslow $mslowvalue 
+<br> mtime $mtimevalue <br> maxdc $maxdctime <br> pulse $pulsevalue <br> mode $modevalue",
     line=attr(color="black", width=2))
-trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="Current vs Time",
+trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="mstop $mstopvalue <br> mslow $mslowvalue 
+<br> mtime $mtimevalue <br> maxdc $maxdctime <br> pulse $pulsevalue <br> mode $modevalue",
     line=attr(color="black", width=2))
 
 plt1 = PlotlyJS.plot(trace1, positionlayout)
