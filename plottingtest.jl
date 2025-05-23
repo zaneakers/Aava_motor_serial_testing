@@ -28,33 +28,36 @@ function write(a, b)
     println(b)
     println(a)
 end
+mstopvalue = "378"
+mslowvalue = "240"
+mtimevalue = "40"
+maxdctime = "80"
+pulsevalue = "100"
+modevalue = "1"
+Parameters = ["mstop $mstopvalue", "mslow $mslowvalue", "mtime $mtimevalue", "maxdc $maxdctime", "pulse $pulsevalue", "mode $modevalue"]
+
     sp = "hello"
 
-    write(sp, "\n")
-        
-    cmd1 = "mstop 378"
-    write(sp, "$cmd1\r\n")
+    write(sp, Parameters[1])
     
-    write(sp, "mslow 240\r\n")
-        
-    write(sp, "mtime 40\r\n")
-        
-    write(sp, "maxdc 80\r\n")
-        
-    write(sp, "pulse 100\r\n")
-        
-    write(sp, "mode 1\r\n")
-        
-write(sp, "go\r\n")
-
+    write(sp, Parameters[2])
+       
+    write(sp, Parameters[3])
+      
+    write(sp, Parameters[4])
+     
+    write(sp, Parameters[5])
+    
+    write(sp, Parameters[6])
+     
 
 newdf = DataFrame(Current=ADC_data, Position=Positional_data, Time = time)
 
 ###################PLOTTING#############################
 
-trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="$cmd1",
+trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="$Parameters[1]<br>$Parameters[2]",
     line=attr(color="black", width=2), showlegend=true)
-trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="$cmd1<br>$cmd1<br>$cmd1",
+trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="hello",
     line=attr(color="black", width=2), showlegend=true)
 
 plt1 = PlotlyJS.plot(trace1, positionlayout)
@@ -63,7 +66,7 @@ plt2 = PlotlyJS.plot(trace2, currentlayout)
 #display(plt2)
 
 #########################CSV file########################################################
-csvfile = "motor_postest3_adc.csv"
+csvfile = "motor_postest4_adc.csv"
 ###check to make sure file exists before comparison
 if isfile(csvfile)
     firstdf = CSV.read(csvfile, DataFrame)

@@ -51,7 +51,15 @@ positionlayout = Layout(
         sleep(0.2)
     end
 
-    
+    #######Values chosen############
+mstopvalue = "378"
+mslowvalue = "240"
+mtimevalue = "40"
+maxdctime = "80"
+pulsevalue = "100"
+modevalue = "1"
+Parameters = []
+
     emptybuff = []
     write(sp, "\n")
         sleep(0.2)
@@ -62,34 +70,33 @@ positionlayout = Layout(
         readfunct()
         sp_flush(sp, SP_BUF_BOTH)
         sleep(0.1)
-    mstopvalue = "378"
+    
     write(sp, "mstop $mstopvalue\r\n")
         smooth()
         readfunct()
-    mslowvalue = "240"
+    
     write(sp, "mslow $mslowvalue\r\n")
         smooth()
         readfunct()
-    mtimevalue = "40"
+    
     write(sp, "mtime $mtimevalue\r\n")
         smooth()
         readfunct()
-    maxdctime = "80"
+    
     write(sp, "maxdc $maxdctime\r\n")
         smooth()
         readfunct()
-    pulsevalue = "100"
+    
     write(sp, "pulse $pulsevalue\r\n")
         smooth()
         readfunct()
-    modevalue = "1"
+    
     write(sp, "mode $modevalue\r\n")
         smooth()
         readfunct()
-write(sp, "go\r\n")
-
-smooth()
-readfunct()
+    write(sp, "go\r\n")
+        smooth()
+        readfunct()
 ############READ#############################
 ### find number of bytes in input buffer, create a new buffer, and read bytes into it
 
