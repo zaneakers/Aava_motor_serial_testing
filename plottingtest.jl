@@ -94,7 +94,11 @@ end
 namey = join(Parameters, "<br> ")
 
 #traces = scatter[]  # collect all traces in an array
-traceinitial = DataFrame()
+ # collect all current traces
+p = make_subplots(rows=1, cols=1, specs = fill(Spec(kind="xy"), 1, 1),
+shared_xaxes=true, vertical_spacing=0.02)
+
+
 for numb in 0:9
     colname = "Position_$numb"
     if colname in names(df_mostrecent)
@@ -106,18 +110,18 @@ for numb in 0:9
             line = attr(width=2),
             showlegend = true
         )
-        traces = vcat(traceintial, trace)
-        traceinitial = traces
+        add_trace!(p, trace, row=1, col=1)
+        println("working?")
     end
-    
+    relayout!(p, title_text="testingthingy1")
 end
+PlotlyJS.savefig(p, "position_plot2.html")
+
+p2 = make_subplots(rows=1, cols=1, specs = fill(Spec(kind="xy"), 1, 1),
+shared_xaxes=true, vertical_spacing=0.02)
 
 # Now plot all found traces together
-plotallposition = PlotlyJS.plot(traces, positionlayout)
-
-current_traces = scatter[]  # collect all current traces
-
-for numb in 1:9
+for numb in 0:9
     colname = "Current_$numb"
     if colname in names(df_mostrecent)
         trace = PlotlyJS.scatter(
@@ -128,9 +132,9 @@ for numb in 1:9
             line = attr(width=2),
             showlegend = true
         )
-        push!(current_traces, trace)
+        add_trace!(p2, trace, row=1, col=1)
     end
+    relayout!(p2, title_text="testingthingy2")
 end
+PlotlyJS.savefig(p2, "current_plot2.html")
 
-# Plot all found current traces together
-plotallcurrent = PlotlyJS.plot(current_traces, currentlayout)
