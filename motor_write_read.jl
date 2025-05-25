@@ -8,10 +8,7 @@ println(ports)
 
 port = "/dev/ttyUSB2"
 sp = LibSerialPort.open(port, 115200) 
-#open allows configuring data framing parameters like ndatabits, parity, and nstopbits.
-# deafult is 8N1
 
-##clear both buffers, use default(no flow control), flow control used to pause sender when needed
 
 #flush input and output buffers
 sp_flush(sp, SP_BUF_BOTH)
@@ -24,7 +21,7 @@ timey = Float16[0.0]
 currentlayout = Layout(
     title="Real Time Current vs Time",
     xaxis=attr(title="Time (ms)"),
-    yaxis=attr(title="Current"),
+    yaxis=attr(title="Current (A)"),
     legend=attr(x=0.01, y=0.99)
 )
 positionlayout = Layout(
@@ -54,7 +51,15 @@ positionlayout = Layout(
         sleep(0.2)
     end
 
-    
+    #######Values chosen############
+mstopvalue = "378"
+mslowvalue = "240"
+mtimevalue = "40"
+maxdctime = "80"
+pulsevalue = "100"
+modevalue = "1"
+Parameters = []
+
     emptybuff = []
     write(sp, "\n")
         sleep(0.2)
@@ -65,28 +70,33 @@ positionlayout = Layout(
         readfunct()
         sp_flush(sp, SP_BUF_BOTH)
         sleep(0.1)
-    write(sp, "mstop 378\r\n")
+    
+    write(sp, "mstop $mstopvalue\r\n")
         smooth()
         readfunct()
-    write(sp, "mslow 240\r\n")
+    
+    write(sp, "mslow $mslowvalue\r\n")
         smooth()
         readfunct()
-    write(sp, "mtime 40\r\n")
+    
+    write(sp, "mtime $mtimevalue\r\n")
         smooth()
         readfunct()
-    write(sp, "maxdc 80\r\n")
+    
+    write(sp, "maxdc $maxdctime\r\n")
         smooth()
         readfunct()
-    write(sp, "pulse 100\r\n")
+    
+    write(sp, "pulse $pulsevalue\r\n")
         smooth()
         readfunct()
-    write(sp, "mode 1\r\n")
+    
+    write(sp, "mode $modevalue\r\n")
         smooth()
         readfunct()
-write(sp, "go\r\n")
-
-smooth()
-readfunct()
+    write(sp, "go\r\n")
+        smooth()
+        readfunct()
 ############READ#############################
 ### find number of bytes in input buffer, create a new buffer, and read bytes into it
 
@@ -122,6 +132,7 @@ write(sp, "stop\r\n")
 close(sp)
 sleep(1)
 
+#############DATA PRESENTATION#######################3
 
 minlen = minimum(length.([ADC_data, Positional_data, timey]))
 df = DataFrame(
@@ -129,10 +140,13 @@ df = DataFrame(
     Position = Positional_data[1:minlen],
     Time = timey[2:minlen+1]  # skip initial 0.0
 )
-
-trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="Position vs Time",
+### if first few lines of ADC data and positional data match in csv, 
+##add new data as columns 
+trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="mstop $mstopvalue <br> mslow $mslowvalue 
+<br> mtime $mtimevalue <br> maxdc $maxdctime <br> pulse $pulsevalue <br> mode $modevalue",
     line=attr(color="black", width=2))
-trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="Current vs Time",
+trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="mstop $mstopvalue <br> mslow $mslowvalue 
+<br> mtime $mtimevalue <br> maxdc $maxdctime <br> pulse $pulsevalue <br> mode $modevalue",
     line=attr(color="black", width=2))
 
 plt1 = PlotlyJS.plot(trace1, positionlayout)
