@@ -58,7 +58,9 @@ mtimevalue = "40"
 maxdctime = "80"
 pulsevalue = "100"
 modevalue = "1"
-Parameters = []
+Parameters = ["mstop $mstopvalue\r\n", "mslow $mslowvalue\r\n", "mtime $mtimevalue\r\n", 
+"maxdc $maxdctime\r\n", "pulse $pulsevalue\r\n", "mode $modevalue\r\n"]
+
 
     emptybuff = []
     write(sp, "\n")
@@ -71,27 +73,27 @@ Parameters = []
         sp_flush(sp, SP_BUF_BOTH)
         sleep(0.1)
     
-    write(sp, "mstop $mstopvalue\r\n")
+    write(sp, Parameters[1])
         smooth()
         readfunct()
     
-    write(sp, "mslow $mslowvalue\r\n")
+    write(sp, Parameters[2])
         smooth()
         readfunct()
     
-    write(sp, "mtime $mtimevalue\r\n")
+    write(sp, Parameters[3])
         smooth()
         readfunct()
     
-    write(sp, "maxdc $maxdctime\r\n")
+    write(sp, Parameters[4])
         smooth()
         readfunct()
     
-    write(sp, "pulse $pulsevalue\r\n")
+    write(sp, Parameters[5])
         smooth()
         readfunct()
     
-    write(sp, "mode $modevalue\r\n")
+    write(sp, Parameters[6])
         smooth()
         readfunct()
     write(sp, "go\r\n")
@@ -132,25 +134,92 @@ write(sp, "stop\r\n")
 close(sp)
 sleep(1)
 
-#############DATA PRESENTATION#######################3
+######Dataframe############
 
 minlen = minimum(length.([ADC_data, Positional_data, timey]))
-df = DataFrame(
+newdf = DataFrame(
     Current = ADC_data[1:minlen],
     Position = Positional_data[1:minlen],
-    Time = timey[2:minlen+1]  # skip initial 0.0
+    Time = timey[1:minlen]  # skip initial 0.0
 )
-### if first few lines of ADC data and positional data match in csv, 
-##add new data as columns 
-trace1 = PlotlyJS.scatter(x=df.Time, y=df.Position, mode="lines", name="mstop $mstopvalue <br> mslow $mslowvalue 
-<br> mtime $mtimevalue <br> maxdc $maxdctime <br> pulse $pulsevalue <br> mode $modevalue",
-    line=attr(color="black", width=2))
-trace2 = PlotlyJS.scatter(x=df.Time, y=df.Current, mode="lines", name="mstop $mstopvalue <br> mslow $mslowvalue 
-<br> mtime $mtimevalue <br> maxdc $maxdctime <br> pulse $pulsevalue <br> mode $modevalue",
-    line=attr(color="black", width=2))
 
-plt1 = PlotlyJS.plot(trace1, positionlayout)
-plt2 = PlotlyJS.plot(trace2, currentlayout)
-PlotlyJS.savefig(plt1, "position_plot.html")
-PlotlyJS.savefig(plt2, "current_plot.html")
-CSV.write("motor_pos_adc.csv", df)
+##pad the parameters column with missing values 
+padded= vcat(Parameters, fill(missing, nrow(newdf) - length(Parameters)))
+parameterdf = DataFrame(Parameters = padded)
+#combine data dataframe and list of parameters dataframe
+newandparameterdf = hcat(parameterdf, newdf)
+
+#########################CSV file########################################################
+csvfile = "motor_postest6_adc.csv"
+###check to make sure file exists before comparison
+if isfile(csvfile)
+    firstdf = CSV.read(csvfile, DataFrame)
+
+    firstdfheader = [first(firstdf[!, col], 5) for col in names(firstdf)]
+    newdfheader = [first(newdf[!, col], 5) for col in names(newdf)]
+        
+    if newdfheader != firstdfheader # if headers different, add to file
+        df_mostrecent = hcat(firstdf, newdf, makeunique=true)
+        CSV.write(csvfile, df_mostrecent)
+        notequal = true
+
+    else# if headers are same and file exists, do nothing
+            println("values are the same, no change to file")
+    end
+
+else
+    df_mostrecent = newandparameterdf
+    CSV.write(csvfile, df_mostrecent)
+
+end
+
+###################PLOTTING#############################
+#make string of parameters to put in legend of plots
+namey = join(Parameters, "<br> ")
+
+#traces = scatter[]  # collect all traces in an array
+ # collect all current traces
+p = make_subplots(rows=1, cols=1, specs = fill(Spec(kind="xy"), 1, 1),
+shared_xaxes=true, vertical_spacing=0.02)
+
+
+for numb in 0:9
+    colname = "Position_$numb"
+    if colname in names(df_mostrecent)
+        trace = PlotlyJS.scatter(
+            x = df_mostrecent.Time,
+            y = df_mostrecent[!, colname],
+            mode = "lines",
+            name = "Settings--- <br> $namey <br> $colname",
+            line = attr(width=2),
+            showlegend = true
+        )
+        add_trace!(p, trace, row=1, col=1)
+    end
+    relayout!(p, title_text="testingthingy1")
+end
+PlotlyJS.savefig(p, "position_plot2.html")
+PlotlyJS.savefig(p, "position_plot2.png")
+
+p2 = make_subplots(rows=1, cols=1, specs = fill(Spec(kind="xy"), 1, 1),
+shared_xaxes=true, vertical_spacing=0.02)
+
+# Now plot all found traces together
+for numb in 0:9
+    colname = "Current_$numb"
+    if colname in names(df_mostrecent)
+        trace = PlotlyJS.scatter(
+            x = df_mostrecent.Time,
+            y = df_mostrecent[!, colname],
+            mode = "lines",
+            name = "Settings--- <br> $namey <br> $colname",
+            line = attr(width=2),
+            showlegend = true
+        )
+        add_trace!(p2, trace, row=1, col=1)
+    end
+    relayout!(p2, title_text="testingthingy2")
+end
+PlotlyJS.savefig(p2, "current_plot2.html")
+PlotlyJS.savefig(p, "current_plot2.png")
+

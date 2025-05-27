@@ -111,11 +111,11 @@ for numb in 0:9
             showlegend = true
         )
         add_trace!(p, trace, row=1, col=1)
-        println("working?")
     end
     relayout!(p, title_text="testingthingy1")
 end
 PlotlyJS.savefig(p, "position_plot2.html")
+PlotlyJS.savefig(p, "position_plot2.png")
 
 p2 = make_subplots(rows=1, cols=1, specs = fill(Spec(kind="xy"), 1, 1),
 shared_xaxes=true, vertical_spacing=0.02)
@@ -137,4 +137,5 @@ for numb in 0:9
     relayout!(p2, title_text="testingthingy2")
 end
 PlotlyJS.savefig(p2, "current_plot2.html")
+PlotlyJS.savefig(p, "current_plot2.png")
 
